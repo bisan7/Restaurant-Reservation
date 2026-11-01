@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartTable | Akıllı Restoran Rezervasyonu</title>
+<style>
+:root{--ink:#26312d;--muted:#758078;--cream:#f6f3ec;--paper:#fffefa;--green:#315b49;--sage:#dce8df;--gold:#c6a56b;--line:#e7e5dc;--red:#a64b43;--blue:#567c91}
+*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{background:var(--green);color:white;padding:20px clamp(16px,4vw,48px);display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.brand{font-size:24px;font-weight:750;letter-spacing:.3px}.brand span{color:#e4c990}.subbrand{font-size:12px;color:#d7e2da}
+nav{display:flex;gap:8px;flex-wrap:wrap}nav button{background:transparent;border:1px solid #ffffff55;color:white;padding:9px 14px;border-radius:20px;cursor:pointer}nav button.active,nav button:hover{background:#fff;color:var(--green)}
+main{max-width:1180px;margin:28px auto;padding:0 16px 48px}.intro{margin-bottom:22px}.intro h1{font-family:Georgia,serif;font-weight:500;font-size:clamp(27px,4vw,40px);margin:0 0 8px}.intro p{color:var(--muted);margin:0;max-width:700px}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:22px;margin:18px 0;box-shadow:0 8px 28px #26312d08}.panel h2{font-size:20px;margin:0 0 16px}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}.field{grid-column:span 3;display:flex;flex-direction:column;gap:6px}.field.wide{grid-column:span 6}.field.full{grid-column:1/-1}label{font-size:13px;color:#59645d;font-weight:650}input,select,textarea{width:100%;padding:11px 12px;border:1px solid #d9ddd5;border-radius:10px;background:white;color:var(--ink);font:inherit}textarea{min-height:78px;resize:vertical}
+.btn{border:0;border-radius:11px;background:var(--green);color:white;padding:11px 16px;font:inherit;font-weight:650;cursor:pointer}.btn:hover{filter:brightness(1.08)}.btn.secondary{background:#e8eee8;color:var(--green)}.btn.danger{background:#f6e5e2;color:var(--red)}.btn.small{padding:7px 10px;font-size:13px}.actions{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.layout{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(260px,.7fr);gap:18px}.floor{position:relative;min-height:390px;border:2px dashed #d9ded4;border-radius:16px;background:linear-gradient(145deg,#f7f8f2,#edf2eb);padding:18px;overflow:hidden}
+.zone{position:absolute;font-size:12px;letter-spacing:1px;color:#8b968b;font-weight:750}.zone.window{top:10px;left:50%;transform:translateX(-50%)}.zone.garden{right:12px;top:50%;writing-mode:vertical-rl}.zone.quiet{bottom:12px;left:12px}
+.table{position:absolute;width:72px;height:64px;border:2px solid #9ba99d;background:#fff;border-radius:15px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 3px 8px #23372a10;transition:.15s}.table strong{font-size:14px}.table small{font-size:10px;color:#68766c}.table:hover{transform:translateY(-2px)}.table.selected{background:var(--green);border-color:var(--green);color:white;box-shadow:0 0 0 4px #315b4922}.table.selected small{color:#e0ece3}.table.unavailable{opacity:.35;cursor:not-allowed;background:#e8e8e3}.table.unavailable:hover{transform:none}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:12px}.legend span{display:flex;align-items:center;gap:5px}.dot{width:10px;height:10px;border-radius:50%;background:#fff;border:1px solid #9ba99d}.dot.sel{background:var(--green)}.dot.off{background:#ccc}
+.preference-list{display:flex;flex-wrap:wrap;gap:8px}.pref{border:1px solid var(--line);background:#fff;border-radius:20px;padding:8px 12px;cursor:pointer;font-size:13px}.pref.on{background:var(--sage);border-color:#9bb9a3;color:var(--green);font-weight:700}
+.summary{background:#f2f5ef;border-radius:13px;padding:14px;margin:12px 0}.summary b{color:var(--green)}.notice{font-size:12px;color:var(--muted);margin-top:9px}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.stat{padding:15px;border-radius:14px;background:#f1f4ee}.stat small{color:var(--muted)}.stat strong{display:block;font-size:25px;color:var(--green)}
+.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:720px}th,td{text-align:left;padding:12px;border-bottom:1px solid var(--line);font-size:13px}th{color:#6b776e;background:#f8f8f3}td .actions{gap:5px}
+.pill{display:inline-block;border-radius:20px;padding:4px 8px;background:#e8eee8;color:var(--green);font-size:11px;font-weight:700}.pill.wait{background:#fff0d9;color:#92651b}.pill.cancel{background:#f8e4e1;color:var(--red)}.pill.expired{background:#ececea;color:#777}
+.hidden{display:none!important}.staff-tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}.staff-tools input,.staff-tools select{max-width:230px}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:24px}
+@media(max-width:800px){.field{grid-column:span 6}.layout{grid-template-columns:1fr}.stat-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.field,.field.wide{grid-column:1/-1}.panel{padding:16px}.floor{min-height:350px}.table{width:61px;height:56px}}
+</style>
+</head>
+<body>
+<header>
+  <div><div class="brand">Smart<span>Table</span></div><div class="subbrand">Restoran rezervasyon ve masa yönetimi</div></div>
+  <nav><button class="active" data-view="customer">Misafir rezervasyonu</button><button data-view="staff">Personel paneli</button><button data-view="manager">Yönetici raporu</button></nav>
+</header>
+
+<section id="roleGate" style="max-width:620px;margin:34px auto;padding:24px;background:#fffefa;border:1px solid #e7e5dc;border-radius:18px">
+  <h1 style="font-family:Georgia,serif;font-weight:500;margin:0 0 8px">SmartTable alanına giriş</h1>
+  <p style="color:#758078;margin:0 0 18px">Demo için rol seçin. Canlı sistemde bu seçim, kullanıcı adı ve şifreyle doğrulanmalıdır.</p>
+  <label for="roleSelect">Giriş yapılacak alan</label>
+  <select id="roleSelect" style="display:block;width:100%;margin:7px 0 14px;padding:11px;border:1px solid #d9ddd5;border-radius:10px">
+    <option value="customer">Müşteri</option><option value="staff">Personel</option><option value="manager">Yönetici</option>
+  </select>
+  <button class="btn" id="enterRole">Alana gir</button>
+  <p class="notice" id="roleMessage">Müşteri yalnızca rezervasyon alanını; personel rezervasyonları ve müşteri işlemlerini; yönetici ise tüm alanları görür.</p>
+</section>
+
+<main>
+<section id="customer">
+  <div class="intro"><h1>Size en uygun masayı seçin.</h1><p>Rezervasyon yaparken yalnızca kişi sayısını değil, oturmak istediğiniz masa konumunu ve manzara tercihinizi de seçin.</p></div>
+  <div class="panel">
+    <h2>1. Rezervasyon bilgileri</h2>
+    <div class="grid">
+      <div class="field"><label for="guest">Ad soyad</label><input id="guest" placeholder="Adınız soyadınız" autocomplete="name"></div>
+      <div class="field"><label for="phone">Telefon</label><input id="phone" type="tel" placeholder="05xx xxx xx xx"></div>
+      <div class="field"><label for="date">Tarih</label><input id="date" type="date"></div>
+      <div class="field"><label for="time">Saat</label><select id="time"></select></div>
+      <div class="field"><label for="party">Kişi sayısı</label><select id="party"><option>1</option><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></div>
+      <div class="field"><label for="duration">Masa süresi</label><select id="duration"><option value="90">90 dakika</option><option value="120" selected>120 dakika</option><option value="150">150 dakika</option></select></div>
+      <div class="field full"><label>2. Masa tercihiniz</label><div class="preference-list" id="preferences"><button class="pref on" data-pref="window">Cam kenarı</button><button class="pref" data-pref="garden">Bahçe manzarası</button><button class="pref" data-pref="quiet">Sessiz köşe</button><button class="pref" data-pref="center">Salon içi</button><button class="pref" data-pref="accessible">Kolay erişim</button></div></div>
+    </div>
+  </div>
+  <div class="panel">
+    <h2>3. Masa planından seçin</h2>
+    <div class="layout">
+      <div><div class="floor" id="floor">
+        <span class="zone window">CAM CEPHESİ / MANZARA</span><span class="zone garden">BAHÇE</span><span class="zone quiet">SESSİZ ALAN</span>
+      </div><div class="legend"><span><i class="dot"></i> Uygun masa</span><span><i class="dot sel"></i> Seçilen masa</span><span><i class="dot off"></i> Dolu / kapasite uygun değil</span></div></div>
+      <div><div class="summary" id="selectionSummary">Tercihlerinize göre uygun bir masa seçin.</div><p class="notice">Masa planı örnek bir restoran düzenidir. Gerçek işletmede masa yerleri ve müsaitlik, restoranın güncel planına bağlanmalıdır.</p><label for="request">Ek istek (isteğe bağlı)</label><textarea id="request" placeholder="Çocuk sandalyesi, doğum günü notu vb."></textarea><div class="actions" style="margin-top:12px"><button class="btn" id="reserve">Rezervasyonu oluştur</button><button class="btn secondary" id="reset">Temizle</button></div><p class="notice" id="customerNotice"></p></div>
+    </div>
+  </div>
+
+  <div class="panel" id="notificationPanel">
+    <h2>Rezervasyon mesajları</h2>
+    <p class="notice">Demo mesajları bu ekranda görünür. Gerçek SMS/WhatsApp gönderimi için bir bildirim servisi bağlantısı gerekir.</p>
+    <div id="notificationLog"><p class="notice">Henüz bildirim yok.</p></div>
+  </div>
+</section>
+
+<section id="staff" class="hidden">
+  <div class="intro"><h1>Personel paneli</h1><p>Rezervasyonları tek ekrandan bulun, misafiri karşılayın, iptal edin veya gelmeyen rezervasyonları yönetin.</p></div>
+  <div class="panel"><div class="stat-grid" id="staffStats"></div></div>
+  <div class="panel"><h2>Rezervasyon listesi</h2><div class="staff-tools"><input id="search" placeholder="İsim, telefon veya masa ara"><select id="statusFilter"><option value="all">Tüm durumlar</option><option value="confirmed">Onaylı</option><option value="checked">Giriş yaptı</option><option value="cancelled">İptal</option><option value="expired">Gelmeyen / süresi dolan</option></select><button class="btn secondary" id="export">CSV dışa aktar</button></div><div class="table-wrap"><table><thead><tr><th>Misafir</th><th>Tarih / saat</th><th>Kişi</th><th>Masa</th><th>Tercih / not</th><th>Durum</th><th>İşlem</th></tr></thead><tbody id="reservationRows"></tbody></table></div><p class="notice">Giriş işlemi personel tarafından yapılır. Rezervasyon saati geçtikten sonra 15 dakika içinde giriş yapılmazsa durum “süresi doldu” olur. Demo açıkken kontrol otomatik çalışır.</p></div>
+  <div class="panel"><h2>Personel için kısa kullanım rehberi</h2><ol><li>Arama alanına misafir adı, telefon veya masa numarası yazın.</li><li>Misafir geldiğinde “Giriş yaptı” seçeneğine basın.</li><li>İptal talebinde “İptal” işlemini kullanın.</li><li>15 dakikalık tolerans dolduğunda gelmeyen rezervasyon otomatik süresi dolan olarak işaretlenir.</li><li>Misafirin özel isteğini rezervasyon satırındaki not alanından kontrol edin.</li></ol></div>
+</section>
+
+<section id="manager" class="hidden">
+  <div class="intro"><h1>Yönetici görünümü</h1><p>Rezervasyon yoğunluğu ve masa kullanımını hızlıca takip edin.</p></div>
+  <div class="panel"><div class="stat-grid" id="managerStats"></div></div>
+  <div class="panel"><h2>Masa kullanım durumu</h2><div class="table-wrap"><table><thead><tr><th>Masa</th><th>Kapasite</th><th>Konum</th><th>Durum</th><th>Sonraki rezervasyon</th></tr></thead><tbody id="tableStatusRows"></tbody></table></div><p class="notice">Bu rapor tarayıcıdaki demo verilerini kullanır. Gerçek zamanlı çok cihazlı raporlama için sunucu ve veritabanı entegrasyonu gerekir.</p></div>
+  <div class="panel"><h2>Bildirim ve operasyon notları</h2><ul><li>Rezervasyon oluşturulduğunda ekranda onay mesajı gösterilir.</li><li>E-posta / SMS onayı ve otomatik hatırlatma bu prototipte simüle edilmez; canlı sistemde SMS veya e-posta servis entegrasyonu gerekir.</li><li>Personel ve yönetici yetkileri bu prototipte görünüm seviyesindedir. Canlı kullanımda kullanıcı girişi ve rol bazlı erişim sunucu tarafında uygulanmalıdır.</li></ul></div>
+</section>
+</main>
+<footer>SmartTable demo · Veriler bu tarayıcıda saklanır · Canlı rezervasyon sistemi değildir</footer>
+<script>
+const tables=[
+{id:'T1',cap:2,zone:'window',x:12,y:19},{id:'T2',cap:4,zone:'window',x:35,y:19},{id:'T3',cap:4,zone:'window',x:58,y:19},{id:'T4',cap:6,zone:'garden',x:79,y:37},
+{id:'T5',cap:2,zone:'center',x:18,y:47},{id:'T6',cap:4,zone:'center',x:42,y:47},{id:'T7',cap:6,zone:'garden',x:69,y:61},
+{id:'T8',cap:4,zone:'quiet',x:27,y:74},{id:'T9',cap:2,zone:'quiet',x:52,y:74},{id:'T10',cap:8,zone:'accessible',x:75,y:80}];
+const prefs={window:'Cam kenarı',garden:'Bahçe manzarası',quiet:'Sessiz köşe',center:'Salon içi',accessible:'Kolay erişim'};
+let selectedPref='window',selectedTable=null,reservations=JSON.parse(localStorage.getItem('smarttable_reservations')||'[]');
+const $=id=>document.getElementById(id);
+function localDate(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+$('date').min=localDate();$('date').value=localDate();
+for(let h=11;h<=22;h++){for(let m of [0,30]){if(h===22&&m===30)continue;let t=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;$('time').add(new Option(t,t))}}
+function save(){localStorage.setItem('smarttable_reservations',JSON.stringify(reservations))}
+function sameSlot(a,b){return a.date===b.date&&a.time===b.time}
+function isBusy(tableId){let date=$('date').value,time=$('time').value,party=+$('party').value;return reservations.some(r=>r.table===tableId&&sameSlot(r,{date,time})&&['confirmed','checked'].includes(r.status)&&r.party>0)}
+function renderFloor(){const floor=$('floor');floor.querySelectorAll('.table').forEach(e=>e.remove());tables.forEach(t=>{let el=document.createElement('button');el.className='table';el.style.left=t.x+'%';el.style.top=t.y+'%';el.style.transform='translate(-50%,-50%)';el.innerHTML=`<strong>${t.id}</strong><small>${t.cap} kişi</small>`;let unavailable=t.cap<+$('party').value||isBusy(t.id);if(unavailable)el.classList.add('unavailable');if(selectedTable===t.id)el.classList.add('selected');el.disabled=unavailable;el.onclick=()=>{selectedTable=t.id;renderFloor();renderSummary()};floor.appendChild(el)})}
+function renderSummary(){let t=tables.find(t=>t.id===selectedTable);$('selectionSummary').innerHTML=t?`<b>${t.id}</b> · ${t.cap} kişilik · ${prefs[t.zone]||'Salon içi'}<br>Tercihiniz: ${prefs[selectedPref]}`:`Tercihinize göre uygun bir masa seçin. <br>Tercih: <b>${prefs[selectedPref]}</b>`}
+$('preferences').querySelectorAll('.pref').forEach(b=>b.onclick=()=>{selectedPref=b.dataset.pref;$('preferences').querySelectorAll('.pref').forEach(x=>x.classList.toggle('on',x===b));selectedTable=null;renderFloor();renderSummary()});
+['date','time','party'].forEach(id=>$(id).addEventListener('change',()=>{selectedTable=null;renderFloor();renderSummary()}));
+$('reserve').onclick=()=>{let guest=$('guest').value.trim(),phone=$('phone').value.trim();if(!guest||!phone||!$('date').value||!selectedTable){$('customerNotice').textContent='Lütfen ad, telefon, tarih ve masa seçimini tamamlayın.';return}
+if(isBusy(selectedTable)){$('customerNotice').textContent='Bu masa bu saat için artık uygun değil. Başka masa seçin.';selectedTable=null;renderFloor();return}
+let record={id:'ST-'+Date.now().toString().slice(-7),guest,phone,date:$('date').value,time:$('time').value,party:+$('party').value,table:selectedTable,pref:prefs[selectedPref],note:$('request').value.trim(),status:'confirmed',createdAt:Date.now(),duration:+$('duration').value,reminderSent:false,cancelNoticeSent:false};
+reservations.push(record);save();if('Notification' in window && Notification.permission==='default'){Notification.requestPermission().catch(()=>{})}addNotification(record,`Rezervasyonunuz ${record.date} tarihinde saat ${record.time} için oluşturuldu.`, 'confirmation');$('customerNotice').textContent=`Rezervasyon alındı. Kodunuz: ${record.id}. Bu demo içinde kayıt saklandı.`;selectedTable=null;renderFloor();renderSummary();renderStaff();renderManager()};
+$('reset').onclick=()=>{$('guest').value='';$('phone').value='';$('request').value='';selectedTable=null;$('customerNotice').textContent='';renderFloor();renderSummary()};
+function statusText(s){return ({confirmed:'Onaylı',checked:'Giriş yaptı',cancelled:'İptal',expired:'Süresi doldu'})[s]||s}
+function statusClass(s){return s==='confirmed'?'pill wait':s==='cancelled'?'pill cancel':s==='expired'?'pill expired':'pill'}
+function renderStaff(){let active=reservations.filter(r=>r.status==='confirmed').length,checked=reservations.filter(r=>r.status==='checked').length,expired=reservations.filter(r=>r.status==='expired').length;
+$('staffStats').innerHTML=`<div class="stat"><small>Onaylı</small><strong>${active}</strong></div><div class="stat"><small>Giriş yapan</small><strong>${checked}</strong></div><div class="stat"><small>İptal</small><strong>${reservations.filter(r=>r.status==='cancelled').length}</strong></div><div class="stat"><small>Süresi dolan</small><strong>${expired}</strong></div>`;
+let q=($('search')?.value||'').toLowerCase(),f=$('statusFilter')?.value||'all';let list=reservations.filter(r=>(f==='all'||(f==='expired'?r.status==='expired':r.status===f))&&[r.guest,r.phone,r.table,r.id].join(' ').toLowerCase().includes(q)).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+$('reservationRows').innerHTML=list.map(r=>`<tr><td><b>${escapeHtml(r.guest)}</b><br><small>${escapeHtml(r.phone)}</small></td><td>${r.date}<br>${r.time}</td><td>${r.party}</td><td>${r.table}</td><td>${escapeHtml(r.pref)}<br><small>${escapeHtml(r.note||'—')}</small></td><td><span class="${statusClass(r.status)}">${statusText(r.status)}</span></td><td><div class="actions">${r.status==='confirmed'?`<button class="btn small" onclick="changeStatus('${r.id}','checked')">Giriş yaptı</button><button class="btn small danger" onclick="changeStatus('${r.id}','cancelled')">İptal</button>`:'—'}</div></td></tr>`).join('')||'<tr><td colspan="7">Henüz rezervasyon yok.</td></tr>'}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+window.changeStatus=(id,status)=>{let r=reservations.find(r=>r.id===id);if(r){r.status=status;r.statusAt=Date.now();save();renderStaff();renderManager();renderFloor()}};
+$('search').oninput=renderStaff;$('statusFilter').onchange=renderStaff;
+function renderManager(){let confirmed=reservations.filter(r=>r.status==='confirmed').length,checked=reservations.filter(r=>r.status==='checked').length,total=reservations.length;
+$('managerStats').innerHTML=`<div class="stat"><small>Toplam kayıt</small><strong>${total}</strong></div><div class="stat"><small>Onaylı rezervasyon</small><strong>${confirmed}</strong></div><div class="stat"><small>Misafir kabul edildi</small><strong>${checked}</strong></div><div class="stat"><small>Aktif masa sayısı</small><strong>${tables.length}</strong></div>`;
+$('tableStatusRows').innerHTML=tables.map(t=>{let r=reservations.filter(r=>r.table===t.id&&r.status==='confirmed').sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time))[0];return `<tr><td><b>${t.id}</b></td><td>${t.cap}</td><td>${prefs[t.zone]||'Salon içi'}</td><td><span class="pill">${r?'Rezervasyon var':'Uygun'}</span></td><td>${r?`${r.date} ${r.time} · ${escapeHtml(r.guest)}`:'—'}</td></tr>`}).join('')}
+$('export').onclick=()=>{let header=['Kod','Misafir','Telefon','Tarih','Saat','Kişi','Masa','Tercih','Not','Durum'];let rows=reservations.map(r=>[r.id,r.guest,r.phone,r.date,r.time,r.party,r.table,r.pref,r.note,statusText(r.status)]);let csv=[header,...rows].map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');let blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='smarttable-rezervasyonlar.csv';a.click();URL.revokeObjectURL(url)};
+let notificationEvents=JSON.parse(localStorage.getItem('smarttable_notifications')||'[]');
+function addNotification(r,message,type){notificationEvents.unshift({id:r.id,guest:r.guest,message,type,at:new Date().toLocaleString('tr-TR')});notificationEvents=notificationEvents.slice(0,100);localStorage.setItem('smarttable_notifications',JSON.stringify(notificationEvents));renderNotifications();
+  // Optional browser alert while this page is open and permission is granted.
+  if('Notification' in window && Notification.permission==='granted'){try{new Notification('SmartTable rezervasyon',{body:message})}catch(e){}}
+}
+function renderNotifications(){let el=$('notificationLog');if(!el)return;el.innerHTML=notificationEvents.length?notificationEvents.map(n=>`<div class="summary" style="margin:8px 0"><b>${escapeHtml(n.guest)}</b> · ${escapeHtml(n.at)}<br>${escapeHtml(n.message)}<br><small>Rezervasyon: ${escapeHtml(n.id)}</small></div>`).join(''):'<p class="notice">Henüz bildirim yok.</p>'}
+function expireNoShows(){let now=Date.now(),changed=false;reservations.forEach(r=>{if(r.status!=='confirmed')return;let start=new Date(`${r.date}T${r.time}:00`).getTime();if(!Number.isFinite(start))return;
+  if(!r.reminderSent && now>=start-15*60*1000 && now<=start+15*60*1000){r.reminderSent=true;addNotification(r,`Hatırlatma: Rezervasyonunuz saat ${r.time} için. Lütfen zamanında gelin.`,'reminder');changed=true}
+  if(now>start+15*60*1000){r.status='expired';if(!r.cancelNoticeSent){r.cancelNoticeSent=true;addNotification(r,`Bilgilendirme: ${r.time} rezervasyonunuz, 15 dakikalık bekleme süresi içinde giriş yapılmadığı için iptal edildi.`,'expired')}changed=true}
+});if(changed)save();renderStaff();renderManager();renderFloor()}
+let currentRole=null;
+function showArea(area){document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.view===area));['customer','staff','manager'].forEach(v=>$(v).classList.toggle('hidden',v!==area));renderStaff();renderManager()}
+function enterRole(){currentRole=$('roleSelect').value;$('roleGate').classList.add('hidden');document.querySelector('main').classList.remove('hidden');
+  document.querySelectorAll('nav button').forEach(b=>{let allowed=currentRole==='manager'||(currentRole==='staff'&&b.dataset.view!=='manager')||(currentRole==='customer'&&b.dataset.view==='customer');b.classList.toggle('hidden',!allowed)});
+  showArea(currentRole==='customer'?'customer':currentRole==='staff'?'staff':'manager');
+  if(currentRole==='staff')showArea('staff');
+  if(currentRole==='manager')showArea('manager');
+}
+$('enterRole').onclick=enterRole;
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{if(currentRole==='customer'&&b.dataset.view!=='customer')return;if(currentRole==='staff'&&b.dataset.view==='manager')return;showArea(b.dataset.view)});
+document.querySelector('main').classList.add('hidden');
+renderFloor();renderSummary();renderStaff();renderManager();renderNotifications();expireNoShows();setInterval(expireNoShows,15000);
+</script>
+</body>
+</html>
